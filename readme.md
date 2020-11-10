@@ -365,3 +365,26 @@ public class MyClassLoader extends ClassLoader {
 
 同时可以使用IO流进行读取class文件
 
+## Java9的新特性-模块化
+
+为了保证兼容性，JDK 9 没有从根本上改变三层类加载器架构和双亲委派模型，但为了模块化系统的顺利运行，仍然发生了一些值得被注意的变动
+
+1. 扩展机制被移除，扩展类加载器由于向后兼容性的原因被保留，不过被重命名为平台类加载器(Platform Class Loader)。可以通过 ClassLoader 的新方法 getPlatformClassLoader() 来获取
+
+   JDK 9 时基于模块化进行构建(原来的 rt.jar 和 tools.jar 被拆分成数十个 JMOD 文件)，其中的 Java 类库就已天然地满足了可扩展的需求，那自然无需再保留 \lib\ext 目录，此前使用这个目录或者 java.ext.dirs 系统变量来扩展 JDK 功能的机制已经没有继续存在的价值了
+
+   ![img](https://pic2.zhimg.com/80/v2-7330dc8512c9601fe5763b3a4670eb19_1440w.jpg)
+
+2. 平台类加载器和应用程序类加载器都不再继承自 java.net.URLClassLoader现在启动类加载器、平台类加载器、应用程序类加载器全都继承于 jdk.internal.loader.BuiltinClassLoader
+
+   如果有程序直接依赖了这种继承关系，或者依赖了 URLClassLoader 类的特定方法，那代码很可能会在 JDK 9 及更高版本的 JDK 中崩溃
+
+3. 在 Java 9 中，类加载器有了名称。该名称在构造方法中指定，可以通过 getName() 方法来获取。平台类加载器的名称是 Platform，应用类加载器的名称是 App。**类加载器的名称在调试与类加载器相关的问题时会非常有用**
+
+4. 启动类加载器现在是在 JVM 内部和 Java 类库共同协作实现的类加载器(以前是 C++ 实现)，但为了与之前代码兼容，在获取启动类加载器的场景中仍然会返回 null，而不会得到 BootClassLoader 实例
+
+5. 类加载的委派关系也发生了变动
+
+   当平台及应用程序类加载器收到类加载请求，在委派给父加载器加载前，要先判断该类是否能够归属到某一个系统模块中，如果可以找到这样的归属关系，就要优先委派给负责哪个模块的加载器完成加载
+
+   ![img](https://pic3.zhimg.com/80/v2-50a4ca1f2b9c138f254b74019a2707ca_1440w.jpg)
