@@ -1,7 +1,8 @@
-package org.abliger;
+package org.abliger.demo2;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +26,7 @@ public class MyClassLoader extends ClassLoader {
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
-        Class clazz = defineClass(name, cLassBytes, 0, cLassBytes.length);
-        return clazz;
+        final Class<?> aClass = defineClass(name, cLassBytes, 0, cLassBytes.length);
+        return aClass;
     }
 }
